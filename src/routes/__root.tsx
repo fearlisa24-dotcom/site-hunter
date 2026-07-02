@@ -91,6 +91,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:title", content: "Scoutly — Find your next website client" },
+      { name: "description", content: "Scoutly helps freelancers discover businesses needing websites and secure new clients." },
+      { property: "og:description", content: "Scoutly helps freelancers discover businesses needing websites and secure new clients." },
+      { name: "twitter:description", content: "Scoutly helps freelancers discover businesses needing websites and secure new clients." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e38f27e9-b858-47e3-8f0c-df17d17cda0b/id-preview-c22a0764--848253a4-b5ff-462f-b375-6b05e54fe1da.lovable.app-1783013445255.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/e38f27e9-b858-47e3-8f0c-df17d17cda0b/id-preview-c22a0764--848253a4-b5ff-462f-b375-6b05e54fe1da.lovable.app-1783013445255.png" },
     ],
     links: [
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
