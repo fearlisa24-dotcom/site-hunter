@@ -44,7 +44,6 @@ function Landing() {
       <Hero />
       <TrustBar />
       <DashboardShowcase />
-      <HowItWorks />
       <Features />
       <SocialProof />
       <Pricing />
