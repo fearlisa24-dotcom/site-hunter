@@ -11,6 +11,10 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiResearchRouteImport } from './routes/api/research'
+import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
+import { Route as ApiPlacesSearchRouteImport } from './routes/api/places/search'
+import { Route as ApiPlacesPhotoRouteImport } from './routes/api/places/photo'
 
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
@@ -22,31 +26,86 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiResearchRoute = ApiResearchRouteImport.update({
+  id: '/api/research',
+  path: '/api/research',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAssistantRoute = ApiAssistantRouteImport.update({
+  id: '/api/assistant',
+  path: '/api/assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPlacesSearchRoute = ApiPlacesSearchRouteImport.update({
+  id: '/api/places/search',
+  path: '/api/places/search',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPlacesPhotoRoute = ApiPlacesPhotoRouteImport.update({
+  id: '/api/places/photo',
+  path: '/api/places/photo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/api/assistant': typeof ApiAssistantRoute
+  '/api/research': typeof ApiResearchRoute
+  '/api/places/photo': typeof ApiPlacesPhotoRoute
+  '/api/places/search': typeof ApiPlacesSearchRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/api/assistant': typeof ApiAssistantRoute
+  '/api/research': typeof ApiResearchRoute
+  '/api/places/photo': typeof ApiPlacesPhotoRoute
+  '/api/places/search': typeof ApiPlacesSearchRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/api/assistant': typeof ApiAssistantRoute
+  '/api/research': typeof ApiResearchRoute
+  '/api/places/photo': typeof ApiPlacesPhotoRoute
+  '/api/places/search': typeof ApiPlacesSearchRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard'
+  fullPaths:
+    | '/'
+    | '/dashboard'
+    | '/api/assistant'
+    | '/api/research'
+    | '/api/places/photo'
+    | '/api/places/search'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard'
-  id: '__root__' | '/' | '/dashboard'
+  to:
+    | '/'
+    | '/dashboard'
+    | '/api/assistant'
+    | '/api/research'
+    | '/api/places/photo'
+    | '/api/places/search'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/api/assistant'
+    | '/api/research'
+    | '/api/places/photo'
+    | '/api/places/search'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
+  ApiAssistantRoute: typeof ApiAssistantRoute
+  ApiResearchRoute: typeof ApiResearchRoute
+  ApiPlacesPhotoRoute: typeof ApiPlacesPhotoRoute
+  ApiPlacesSearchRoute: typeof ApiPlacesSearchRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -65,23 +124,45 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/research': {
+      id: '/api/research'
+      path: '/api/research'
+      fullPath: '/api/research'
+      preLoaderRoute: typeof ApiResearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/assistant': {
+      id: '/api/assistant'
+      path: '/api/assistant'
+      fullPath: '/api/assistant'
+      preLoaderRoute: typeof ApiAssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/places/search': {
+      id: '/api/places/search'
+      path: '/api/places/search'
+      fullPath: '/api/places/search'
+      preLoaderRoute: typeof ApiPlacesSearchRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/places/photo': {
+      id: '/api/places/photo'
+      path: '/api/places/photo'
+      fullPath: '/api/places/photo'
+      preLoaderRoute: typeof ApiPlacesPhotoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
+  ApiAssistantRoute: ApiAssistantRoute,
+  ApiResearchRoute: ApiResearchRoute,
+  ApiPlacesPhotoRoute: ApiPlacesPhotoRoute,
+  ApiPlacesSearchRoute: ApiPlacesSearchRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
