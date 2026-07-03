@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiResearchRouteImport } from './routes/api/research'
+import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 import { Route as ApiPlacesSearchRouteImport } from './routes/api/places/search'
 import { Route as ApiPlacesPhotoRouteImport } from './routes/api/places/photo'
 
@@ -30,6 +31,11 @@ const ApiResearchRoute = ApiResearchRouteImport.update({
   path: '/api/research',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAssistantRoute = ApiAssistantRouteImport.update({
+  id: '/api/assistant',
+  path: '/api/assistant',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPlacesSearchRoute = ApiPlacesSearchRouteImport.update({
   id: '/api/places/search',
   path: '/api/places/search',
@@ -44,6 +50,7 @@ const ApiPlacesPhotoRoute = ApiPlacesPhotoRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/api/assistant': typeof ApiAssistantRoute
   '/api/research': typeof ApiResearchRoute
   '/api/places/photo': typeof ApiPlacesPhotoRoute
   '/api/places/search': typeof ApiPlacesSearchRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/api/assistant': typeof ApiAssistantRoute
   '/api/research': typeof ApiResearchRoute
   '/api/places/photo': typeof ApiPlacesPhotoRoute
   '/api/places/search': typeof ApiPlacesSearchRoute
@@ -59,6 +67,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/api/assistant': typeof ApiAssistantRoute
   '/api/research': typeof ApiResearchRoute
   '/api/places/photo': typeof ApiPlacesPhotoRoute
   '/api/places/search': typeof ApiPlacesSearchRoute
@@ -68,6 +77,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/dashboard'
+    | '/api/assistant'
     | '/api/research'
     | '/api/places/photo'
     | '/api/places/search'
@@ -75,6 +85,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/dashboard'
+    | '/api/assistant'
     | '/api/research'
     | '/api/places/photo'
     | '/api/places/search'
@@ -82,6 +93,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/dashboard'
+    | '/api/assistant'
     | '/api/research'
     | '/api/places/photo'
     | '/api/places/search'
@@ -90,6 +102,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
+  ApiAssistantRoute: typeof ApiAssistantRoute
   ApiResearchRoute: typeof ApiResearchRoute
   ApiPlacesPhotoRoute: typeof ApiPlacesPhotoRoute
   ApiPlacesSearchRoute: typeof ApiPlacesSearchRoute
@@ -118,6 +131,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiResearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/assistant': {
+      id: '/api/assistant'
+      path: '/api/assistant'
+      fullPath: '/api/assistant'
+      preLoaderRoute: typeof ApiAssistantRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/places/search': {
       id: '/api/places/search'
       path: '/api/places/search'
@@ -138,6 +158,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
+  ApiAssistantRoute: ApiAssistantRoute,
   ApiResearchRoute: ApiResearchRoute,
   ApiPlacesPhotoRoute: ApiPlacesPhotoRoute,
   ApiPlacesSearchRoute: ApiPlacesSearchRoute,
