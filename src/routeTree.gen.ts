@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPlacesSearchRouteImport } from './routes/api/places/search'
+import { Route as ApiPlacesPhotoRouteImport } from './routes/api/places/photo'
 
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
@@ -28,34 +29,48 @@ const ApiPlacesSearchRoute = ApiPlacesSearchRouteImport.update({
   path: '/api/places/search',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPlacesPhotoRoute = ApiPlacesPhotoRouteImport.update({
+  id: '/api/places/photo',
+  path: '/api/places/photo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/api/places/photo': typeof ApiPlacesPhotoRoute
   '/api/places/search': typeof ApiPlacesSearchRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/api/places/photo': typeof ApiPlacesPhotoRoute
   '/api/places/search': typeof ApiPlacesSearchRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/dashboard': typeof DashboardRoute
+  '/api/places/photo': typeof ApiPlacesPhotoRoute
   '/api/places/search': typeof ApiPlacesSearchRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/dashboard' | '/api/places/search'
+  fullPaths: '/' | '/dashboard' | '/api/places/photo' | '/api/places/search'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/dashboard' | '/api/places/search'
-  id: '__root__' | '/' | '/dashboard' | '/api/places/search'
+  to: '/' | '/dashboard' | '/api/places/photo' | '/api/places/search'
+  id:
+    | '__root__'
+    | '/'
+    | '/dashboard'
+    | '/api/places/photo'
+    | '/api/places/search'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   DashboardRoute: typeof DashboardRoute
+  ApiPlacesPhotoRoute: typeof ApiPlacesPhotoRoute
   ApiPlacesSearchRoute: typeof ApiPlacesSearchRoute
 }
 
@@ -82,12 +97,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPlacesSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/places/photo': {
+      id: '/api/places/photo'
+      path: '/api/places/photo'
+      fullPath: '/api/places/photo'
+      preLoaderRoute: typeof ApiPlacesPhotoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   DashboardRoute: DashboardRoute,
+  ApiPlacesPhotoRoute: ApiPlacesPhotoRoute,
   ApiPlacesSearchRoute: ApiPlacesSearchRoute,
 }
 export const routeTree = rootRouteImport
