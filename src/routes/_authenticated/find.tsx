@@ -1,9 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Search, Bell, Compass, LayoutDashboard, Bookmark, Settings, MapPin, Building2,
   Star, Phone, Mail, Instagram, Facebook, Globe, Sparkles, X, ChevronDown, ChevronLeft, ChevronRight,
   Linkedin, Youtube, Twitter, MessageCircle, Loader2, ExternalLink, ImageIcon, Music2,
+  Copy, Check, Navigation, TrendingUp, DollarSign, Target, Zap, Award, AlertTriangle, PhoneCall,
+  Clock, Flame, Wand2, Send, ArrowUpRight,
 } from "lucide-react";
 import { AIAssistant } from "@/components/ai-assistant";
 import { OnboardingModal } from "@/components/onboarding-modal";
