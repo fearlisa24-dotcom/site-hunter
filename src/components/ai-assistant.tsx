@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { MessageCircle, X, Send, Sparkles, Loader2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
@@ -74,13 +76,17 @@ export function AIAssistant({ context }: { context?: string }) {
           {messages.map((m, i) => (
             <div key={i} className={`flex ${m.role === "user" ? "justify-end" : "justify-start"}`}>
               <div
-                className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed ${
+                className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-[13px] leading-relaxed ${
                   m.role === "user"
-                    ? "bg-navy text-navy-foreground"
-                    : "bg-surface text-foreground"
+                    ? "whitespace-pre-wrap bg-navy text-navy-foreground"
+                    : "prose prose-sm max-w-none bg-surface text-foreground [&_p]:my-1.5 [&_ul]:my-2 [&_ol]:my-2 [&_li]:my-0.5 [&_code]:rounded [&_code]:bg-background [&_code]:px-1 [&_code]:py-0.5 [&_pre]:mt-2 [&_pre]:overflow-x-auto [&_pre]:rounded-lg [&_pre]:bg-navy [&_pre]:p-3 [&_pre]:text-navy-foreground [&_a]:text-navy [&_a]:underline [&_table]:my-2 [&_th]:border [&_th]:border-hairline [&_th]:px-2 [&_th]:py-1 [&_td]:border [&_td]:border-hairline [&_td]:px-2 [&_td]:py-1"
                 }`}
               >
-                {m.content}
+                {m.role === "user" ? (
+                  m.content
+                ) : (
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.content}</ReactMarkdown>
+                )}
               </div>
             </div>
           ))}

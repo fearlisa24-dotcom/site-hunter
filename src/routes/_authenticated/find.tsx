@@ -6,8 +6,10 @@ import {
   Linkedin, Youtube, Twitter, MessageCircle, Loader2, ExternalLink, ImageIcon, Music2,
 } from "lucide-react";
 import { AIAssistant } from "@/components/ai-assistant";
+import { OnboardingModal } from "@/components/onboarding-modal";
+import { readLeads, upsertLead, removeLead, type StoredLead } from "@/lib/leads-store";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_authenticated/find")({
   head: () => ({
     meta: [
       { title: "Dashboard — Scoutly" },
@@ -72,12 +74,35 @@ function DashboardPage() {
   const [gallery, setGallery] = useState<{ photos: string[]; index: number; name: string } | null>(null);
   const [saved, setSaved] = useState<Set<string>>(new Set());
 
-  const toggleSave = (id: string) =>
-    setSaved((s) => {
-      const n = new Set(s);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
+  useEffect(() => {
+    setSaved(new Set(readLeads().map((l) => l.placeId)));
+    const h = () => setSaved(new Set(readLeads().map((l) => l.placeId)));
+    window.addEventListener("scoutly:leads-changed", h);
+    return () => window.removeEventListener("scoutly:leads-changed", h);
+  }, []);
+
+  const toggleSave = (p: EnrichedPlace) => {
+    if (saved.has(p.placeId)) {
+      removeLead(p.placeId);
+    } else {
+      const lead: StoredLead = {
+        placeId: p.placeId,
+        name: p.name,
+        address: p.address,
+        primaryCategory: p.primaryCategory,
+        rating: p.rating,
+        reviewCount: p.reviewCount,
+        website: p.website,
+        phone: p.phone,
+        heroPhoto: p.heroPhoto,
+        opportunityScore: p.research?.opportunityScore,
+        websiteStatus: p.research?.websiteStatus,
+        savedAt: new Date().toISOString(),
+        status: "new",
+      };
+      upsertLead(lead);
+    }
+  };
 
   const runSearch = async () => {
     setLoading(true);
@@ -158,59 +183,54 @@ function DashboardPage() {
   }, [selected, industry, location, results.length]);
 
   return (
-    <div className="grid min-h-screen grid-cols-[240px_1fr] bg-background">
-      <Sidebar savedCount={saved.size} />
-      <div className="flex min-w-0 flex-col">
-        <TopBar />
-        <main className="flex-1 overflow-x-hidden">
-          <div className="mx-auto max-w-[1440px] px-6 py-8 lg:px-10 lg:py-10">
-            <PageHeader />
-            <SearchPanel
-              location={location}
-              setLocation={setLocation}
-              industry={industry}
-              setIndustry={setIndustry}
-              radius={radius}
-              setRadius={setRadius}
-              onSearch={runSearch}
-              loading={loading}
-            />
+    <>
+      <OnboardingModal />
+      <div className="mx-auto max-w-[1440px] px-6 py-8 lg:px-10 lg:py-10">
+        <PageHeader />
+        <SearchPanel
+          location={location}
+          setLocation={setLocation}
+          industry={industry}
+          setIndustry={setIndustry}
+          radius={radius}
+          setRadius={setRadius}
+          onSearch={runSearch}
+          loading={loading}
+        />
 
-            {error && (
-              <div className="mt-6 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-                {error}
-              </div>
-            )}
-
-            <ResultsHeader
-              count={sortedResults.length}
-              loading={loading}
-              location={meta?.formatted ?? location}
-              industry={industry}
-            />
-
-            <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
-              {loading && sortedResults.length === 0 && Array.from({ length: 10 }).map((_, i) => <CardSkeleton key={i} />)}
-              {sortedResults.map((p) => (
-                <BusinessCard
-                  key={p.placeId}
-                  p={p}
-                  saved={saved.has(p.placeId)}
-                  onSave={() => toggleSave(p.placeId)}
-                  onResearch={() => setSelected(p)}
-                  onImage={() => p.photos.length > 0 && setGallery({ photos: p.photos, index: 0, name: p.name })}
-                />
-              ))}
-            </div>
+        {error && (
+          <div className="mt-6 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+            {error}
           </div>
-        </main>
+        )}
+
+        <ResultsHeader
+          count={sortedResults.length}
+          loading={loading}
+          location={meta?.formatted ?? location}
+          industry={industry}
+        />
+
+        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5">
+          {loading && sortedResults.length === 0 && Array.from({ length: 10 }).map((_, i) => <CardSkeleton key={i} />)}
+          {sortedResults.map((p) => (
+            <BusinessCard
+              key={p.placeId}
+              p={p}
+              saved={saved.has(p.placeId)}
+              onSave={() => toggleSave(p)}
+              onResearch={() => setSelected(p)}
+              onImage={() => p.photos.length > 0 && setGallery({ photos: p.photos, index: 0, name: p.name })}
+            />
+          ))}
+        </div>
       </div>
 
       {selected && (
         <BusinessProfile
           p={selected}
           saved={saved.has(selected.placeId)}
-          onSave={() => toggleSave(selected.placeId)}
+          onSave={() => toggleSave(selected)}
           onClose={() => setSelected(null)}
           onOpenGallery={(index) => setGallery({ photos: selected.photos, index, name: selected.name })}
         />
@@ -225,7 +245,7 @@ function DashboardPage() {
         />
       )}
       <AIAssistant context={assistantContext} />
-    </div>
+    </>
   );
 }
 

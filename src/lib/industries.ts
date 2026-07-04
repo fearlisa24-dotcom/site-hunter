@@ -1,0 +1,18 @@
+export const INDUSTRIES = [
+  "Restaurants", "Cafés", "Bars & Pubs", "Bakeries", "Food Trucks",
+  "Hair Salons", "Barbers", "Nail Salons", "Spas", "Tattoo Studios",
+  "Gyms & Fitness", "Yoga Studios", "Personal Trainers",
+  "Dentists", "Chiropractors", "Veterinarians", "Physical Therapy",
+  "Plumbers", "Electricians", "Roofers", "HVAC", "Contractors", "Handymen",
+  "Landscapers", "Pest Control", "Cleaning Services", "Window Cleaning",
+  "Auto Repair", "Car Dealerships", "Auto Detailing", "Mechanics",
+  "Real Estate Agents", "Property Management", "Mortgage Brokers",
+  "Law Firms", "Accountants", "Financial Advisors", "Insurance Agents",
+  "Marketing Agencies", "Photographers", "Videographers", "Graphic Designers",
+  "Hotels", "Bed & Breakfasts", "Event Venues", "Wedding Planners",
+  "Florists", "Boutiques", "Jewelry Stores", "Bookstores", "Toy Stores",
+  "Pet Groomers", "Pet Stores", "Dog Trainers",
+  "Coffee Roasters", "Breweries", "Wineries",
+  "Tutors", "Music Schools", "Dance Studios", "Martial Arts",
+  "Home Builders", "Interior Designers", "Architects", "Painters",
+];
