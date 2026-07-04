@@ -6,6 +6,8 @@ import {
   Linkedin, Youtube, Twitter, MessageCircle, Loader2, ExternalLink, ImageIcon, Music2,
 } from "lucide-react";
 import { AIAssistant } from "@/components/ai-assistant";
+import { OnboardingModal } from "@/components/onboarding-modal";
+import { readLeads, upsertLead, removeLead, type StoredLead } from "@/lib/leads-store";
 
 export const Route = createFileRoute("/_authenticated/find")({
   head: () => ({
@@ -72,12 +74,35 @@ function DashboardPage() {
   const [gallery, setGallery] = useState<{ photos: string[]; index: number; name: string } | null>(null);
   const [saved, setSaved] = useState<Set<string>>(new Set());
 
-  const toggleSave = (id: string) =>
-    setSaved((s) => {
-      const n = new Set(s);
-      n.has(id) ? n.delete(id) : n.add(id);
-      return n;
-    });
+  useEffect(() => {
+    setSaved(new Set(readLeads().map((l) => l.placeId)));
+    const h = () => setSaved(new Set(readLeads().map((l) => l.placeId)));
+    window.addEventListener("scoutly:leads-changed", h);
+    return () => window.removeEventListener("scoutly:leads-changed", h);
+  }, []);
+
+  const toggleSave = (p: EnrichedPlace) => {
+    if (saved.has(p.placeId)) {
+      removeLead(p.placeId);
+    } else {
+      const lead: StoredLead = {
+        placeId: p.placeId,
+        name: p.name,
+        address: p.address,
+        primaryCategory: p.primaryCategory,
+        rating: p.rating,
+        reviewCount: p.reviewCount,
+        website: p.website,
+        phone: p.phone,
+        heroPhoto: p.heroPhoto,
+        opportunityScore: p.research?.opportunityScore,
+        websiteStatus: p.research?.websiteStatus,
+        savedAt: new Date().toISOString(),
+        status: "new",
+      };
+      upsertLead(lead);
+    }
+  };
 
   const runSearch = async () => {
     setLoading(true);
