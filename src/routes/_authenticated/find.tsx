@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { AIAssistant } from "@/components/ai-assistant";
 
-export const Route = createFileRoute("/dashboard")({
+export const Route = createFileRoute("/_authenticated/find")({
   head: () => ({
     meta: [
       { title: "Dashboard — Scoutly" },
