@@ -24,11 +24,11 @@ export function Navbar() {
           ))}
         </nav>
         <div className="hidden items-center gap-2 md:flex">
-          <Link to="/dashboard" className="text-sm text-muted-foreground transition hover:text-foreground">
+          <Link to="/auth" className="text-sm text-muted-foreground transition hover:text-foreground">
             Sign in
           </Link>
           <Link
-            to="/dashboard"
+            to="/auth"
             className="inline-flex h-9 items-center gap-1.5 rounded-full bg-navy px-4 text-sm font-medium text-navy-foreground transition hover:opacity-90"
           >
             Start free
