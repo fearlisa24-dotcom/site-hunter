@@ -47,10 +47,24 @@ type Research = {
   summary: string;
   whyGoodOpportunity: string[];
   onlinePresenceAnalysis: string;
+  websiteAnalysis?: string;
+  websiteQualityScore?: number;
+  websiteIssues?: string[];
   websiteRecommendation: { type: string; rationale: string; features: string[] };
+  seoOpportunities?: string[];
+  marketingOpportunities?: string[];
+  competitiveAdvantages?: string[];
+  potentialMonthlyLeads?: string;
+  estimatedWebsiteValue?: string;
+  priceRange?: { min: number; max: number; currency: string };
   outreachStrategy: string;
-  outreachMessage: string;
-  socials: Partial<Record<"website" | "facebook" | "instagram" | "linkedin" | "tiktok" | "x" | "youtube" | "whatsapp", string>>;
+  outreachMessage?: string;
+  outreachEmail?: { subject: string; body: string };
+  instagramDm?: string;
+  facebookMessage?: string;
+  coldCallScript?: string;
+  quickBadges?: string[];
+  socials: Partial<Record<"website" | "facebook" | "instagram" | "linkedin" | "tiktok" | "x" | "youtube" | "whatsapp" | "pinterest", string>>;
   email?: string;
 };
 
