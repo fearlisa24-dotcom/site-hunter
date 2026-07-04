@@ -10,15 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiResearchRouteImport } from './routes/api/research'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 import { Route as ApiPlacesSearchRouteImport } from './routes/api/places/search'
 import { Route as ApiPlacesPhotoRouteImport } from './routes/api/places/photo'
+import { Route as ApiPlacesAutocompleteRouteImport } from './routes/api/places/autocomplete'
 
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -46,29 +53,40 @@ const ApiPlacesPhotoRoute = ApiPlacesPhotoRouteImport.update({
   path: '/api/places/photo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPlacesAutocompleteRoute = ApiPlacesAutocompleteRouteImport.update({
+  id: '/api/places/autocomplete',
+  path: '/api/places/autocomplete',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/api/research': typeof ApiResearchRoute
+  '/api/places/autocomplete': typeof ApiPlacesAutocompleteRoute
   '/api/places/photo': typeof ApiPlacesPhotoRoute
   '/api/places/search': typeof ApiPlacesSearchRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/api/research': typeof ApiResearchRoute
+  '/api/places/autocomplete': typeof ApiPlacesAutocompleteRoute
   '/api/places/photo': typeof ApiPlacesPhotoRoute
   '/api/places/search': typeof ApiPlacesSearchRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/dashboard': typeof DashboardRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/api/research': typeof ApiResearchRoute
+  '/api/places/autocomplete': typeof ApiPlacesAutocompleteRoute
   '/api/places/photo': typeof ApiPlacesPhotoRoute
   '/api/places/search': typeof ApiPlacesSearchRoute
 }
@@ -76,34 +94,42 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth'
     | '/dashboard'
     | '/api/assistant'
     | '/api/research'
+    | '/api/places/autocomplete'
     | '/api/places/photo'
     | '/api/places/search'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth'
     | '/dashboard'
     | '/api/assistant'
     | '/api/research'
+    | '/api/places/autocomplete'
     | '/api/places/photo'
     | '/api/places/search'
   id:
     | '__root__'
     | '/'
+    | '/auth'
     | '/dashboard'
     | '/api/assistant'
     | '/api/research'
+    | '/api/places/autocomplete'
     | '/api/places/photo'
     | '/api/places/search'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   DashboardRoute: typeof DashboardRoute
   ApiAssistantRoute: typeof ApiAssistantRoute
   ApiResearchRoute: typeof ApiResearchRoute
+  ApiPlacesAutocompleteRoute: typeof ApiPlacesAutocompleteRoute
   ApiPlacesPhotoRoute: typeof ApiPlacesPhotoRoute
   ApiPlacesSearchRoute: typeof ApiPlacesSearchRoute
 }
@@ -115,6 +141,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -152,14 +185,23 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPlacesPhotoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/places/autocomplete': {
+      id: '/api/places/autocomplete'
+      path: '/api/places/autocomplete'
+      fullPath: '/api/places/autocomplete'
+      preLoaderRoute: typeof ApiPlacesAutocompleteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   DashboardRoute: DashboardRoute,
   ApiAssistantRoute: ApiAssistantRoute,
   ApiResearchRoute: ApiResearchRoute,
+  ApiPlacesAutocompleteRoute: ApiPlacesAutocompleteRoute,
   ApiPlacesPhotoRoute: ApiPlacesPhotoRoute,
   ApiPlacesSearchRoute: ApiPlacesSearchRoute,
 }
