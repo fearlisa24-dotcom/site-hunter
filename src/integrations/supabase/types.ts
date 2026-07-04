@@ -14,7 +14,185 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      outreach: {
+        Row: {
+          body: string
+          channel: string
+          created_at: string
+          id: string
+          lead_id: string | null
+          sent_at: string | null
+          status: string
+          subject: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          body: string
+          channel?: string
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          body?: string
+          channel?: string
+          created_at?: string
+          id?: string
+          lead_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outreach_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "saved_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          default_industry: string | null
+          default_location: string | null
+          default_radius: number
+          email: string | null
+          full_name: string | null
+          id: string
+          onboarded: boolean
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          default_industry?: string | null
+          default_location?: string | null
+          default_radius?: number
+          email?: string | null
+          full_name?: string | null
+          id: string
+          onboarded?: boolean
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          default_industry?: string | null
+          default_location?: string | null
+          default_radius?: number
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          onboarded?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      saved_leads: {
+        Row: {
+          address: string | null
+          created_at: string
+          data: Json
+          hero_photo: string | null
+          id: string
+          name: string
+          notes: string | null
+          opportunity_score: number | null
+          phone: string | null
+          place_id: string
+          primary_category: string | null
+          rating: number | null
+          review_count: number | null
+          status: string
+          updated_at: string
+          user_id: string
+          website: string | null
+          website_status: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          data?: Json
+          hero_photo?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          opportunity_score?: number | null
+          phone?: string | null
+          place_id: string
+          primary_category?: string | null
+          rating?: number | null
+          review_count?: number | null
+          status?: string
+          updated_at?: string
+          user_id: string
+          website?: string | null
+          website_status?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          data?: Json
+          hero_photo?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          opportunity_score?: number | null
+          phone?: string | null
+          place_id?: string
+          primary_category?: string | null
+          rating?: number | null
+          review_count?: number | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+          website?: string | null
+          website_status?: string | null
+        }
+        Relationships: []
+      }
+      searches: {
+        Row: {
+          created_at: string
+          id: string
+          industry: string
+          location: string
+          radius_miles: number
+          result_count: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          industry: string
+          location: string
+          radius_miles: number
+          result_count?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          industry?: string
+          location?: string
+          radius_miles?: number
+          result_count?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
