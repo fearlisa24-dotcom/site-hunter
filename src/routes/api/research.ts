@@ -19,13 +19,22 @@ type ResearchResult = {
   summary: string;
   whyGoodOpportunity: string[];
   onlinePresenceAnalysis: string;
-  websiteRecommendation: {
-    type: string;
-    rationale: string;
-    features: string[];
-  };
+  websiteRecommendation: { type: string; rationale: string; features: string[] };
+  websiteAnalysis: string;
+  websiteQualityScore?: number;
+  websiteIssues: string[];
+  seoOpportunities: string[];
+  marketingOpportunities: string[];
+  competitiveAdvantages: string[];
+  potentialMonthlyLeads: string;
+  estimatedWebsiteValue: string;
+  priceRange: { min: number; max: number; currency: string };
   outreachStrategy: string;
-  outreachMessage: string;
+  outreachEmail: { subject: string; body: string };
+  instagramDm: string;
+  facebookMessage: string;
+  coldCallScript: string;
+  quickBadges: string[];
   socials: {
     website?: string;
     facebook?: string;
@@ -35,6 +44,7 @@ type ResearchResult = {
     x?: string;
     youtube?: string;
     whatsapp?: string;
+    pinterest?: string;
   };
   email?: string;
 };
@@ -45,7 +55,7 @@ export const Route = createFileRoute("/api/research")({
       POST: async ({ request }) => {
         try {
           const b = (await request.json()) as ResearchInput;
-          const sys = `You are Scoutly's AI research analyst. You help freelance web designers evaluate small businesses as potential website clients. Return STRICT JSON matching the schema. Be realistic and specific.`;
+          const sys = `You are Scoutly's AI research analyst. You help freelance web designers evaluate small businesses as potential website clients. Return STRICT JSON matching the schema. Be realistic, specific, and useful.`;
           const user = `Business to analyze:
 Name: ${b.name}
 Address: ${b.address ?? "unknown"}
@@ -55,38 +65,37 @@ Google rating: ${b.rating ?? "n/a"} (${b.reviewCount ?? 0} reviews)
 Current website (from Google Maps): ${b.website ?? "NONE LISTED"}
 Phone: ${b.phone ?? "unknown"}
 
-Tasks:
-1) Infer likely social media profile URLs (guess handles from the business name only if plausible; leave empty if uncertain). Platforms: website, facebook, instagram, linkedin, tiktok, x, youtube, whatsapp.
-2) Infer a plausible public business email if one commonly follows the pattern (info@domain.com only if a website exists). Otherwise leave empty.
-3) Assess websiteStatus. If no website: "None". If website looks like a Facebook page / Linktree / directory only: still "None". Otherwise best guess: Outdated, Template, or Modern.
-4) onlinePresenceStrength based on rating volume + likely social activity.
-5) opportunityScore (0-100): higher when business is popular locally AND lacks a modern website. Popular + no website = 85-98. Popular + outdated = 70-85. Modern site = 20-45.
-6) summary: one crisp sentence (< 140 chars) explaining the opportunity.
-7) whyGoodOpportunity: 3-5 bullet reasons.
-8) onlinePresenceAnalysis: 2-3 sentences.
-9) websiteRecommendation: {type (e.g., "One-page Framer site with online menu"), rationale (1-2 sentences), features (4-6 items)}.
-10) outreachStrategy: 2-3 sentences on how to approach this owner.
-11) outreachMessage: a short (90-120 words) personalized cold email/DM, warm but professional, references specifics.
-
-Respond ONLY with JSON of shape:
+Return ONLY JSON with this exact shape (no commentary):
 {
- "opportunityScore": number,
+ "opportunityScore": number (0-100; popular+no-site 85-98, popular+outdated 70-85, modern 20-45),
  "websiteStatus": "None"|"Outdated"|"Template"|"Modern",
  "onlinePresenceStrength": "Weak"|"Moderate"|"Strong",
- "summary": string,
- "whyGoodOpportunity": string[],
- "onlinePresenceAnalysis": string,
- "websiteRecommendation": {"type": string, "rationale": string, "features": string[]},
- "outreachStrategy": string,
- "outreachMessage": string,
- "socials": {"website"?: string, "facebook"?: string, "instagram"?: string, "linkedin"?: string, "tiktok"?: string, "x"?: string, "youtube"?: string, "whatsapp"?: string},
- "email"?: string
+ "summary": string (<= 160 chars, single sentence),
+ "whyGoodOpportunity": string[] (3-5 bullets),
+ "onlinePresenceAnalysis": string (2-3 sentences),
+ "websiteAnalysis": string (2-4 sentences on the current site or its absence),
+ "websiteQualityScore": number (0-100, omit if no site),
+ "websiteIssues": string[] (short labels like "Slow", "Outdated", "Not mobile friendly", "No SSL", "Broken links", "Poor design"; empty if modern site),
+ "websiteRecommendation": {"type": string, "rationale": string, "features": string[] (4-6)},
+ "seoOpportunities": string[] (3-5 concrete tactics),
+ "marketingOpportunities": string[] (3-5 concrete ideas),
+ "competitiveAdvantages": string[] (3-5 traits the business already has),
+ "potentialMonthlyLeads": string (e.g. "20-40 new inquiries / month"),
+ "estimatedWebsiteValue": string (e.g. "$8k-$14k in new revenue / year"),
+ "priceRange": {"min": number, "max": number, "currency": "USD"} (freelancer project fee),
+ "outreachStrategy": string (2-3 sentences),
+ "outreachEmail": {"subject": string, "body": string (90-140 words, warm, references specifics)},
+ "instagramDm": string (40-70 words, friendly, references their content),
+ "facebookMessage": string (40-70 words, personable),
+ "coldCallScript": string (60-100 words, natural spoken tone, includes opening + hook + close),
+ "quickBadges": string[] (0-4 short labels; choose from "High Opportunity","Popular","Social Only","No Website","Trending","Underrated","Great Reviews","Outdated Site"),
+ "socials": {"website"?: string, "facebook"?: string, "instagram"?: string, "linkedin"?: string, "tiktok"?: string, "x"?: string, "youtube"?: string, "whatsapp"?: string, "pinterest"?: string} (only include URLs you're reasonably confident about; guess handles from the business name only if plausible),
+ "email"?: string (only if you can reasonably infer a public one; else omit)
 }`;
           const out = await chatJSON<ResearchResult>([
             { role: "system", content: sys },
             { role: "user", content: user },
           ]);
-          // Prefer known website
           if (b.website && !out.socials?.website) {
             out.socials = { ...out.socials, website: b.website };
           }
