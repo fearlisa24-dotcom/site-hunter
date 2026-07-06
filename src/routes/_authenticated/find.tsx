@@ -256,7 +256,7 @@ function DashboardPage() {
               p={p}
               saved={saved.has(p.placeId)}
               onSave={() => toggleSave(p)}
-              onResearch={() => setSelected(p)}
+              onResearch={() => openProfile(p)}
               onImage={() => p.photos.length > 0 && setGallery({ photos: p.photos, index: 0, name: p.name })}
             />
           ))}
