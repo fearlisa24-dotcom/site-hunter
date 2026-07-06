@@ -10,6 +10,7 @@ import {
 import { AIAssistant } from "@/components/ai-assistant";
 import { OnboardingModal } from "@/components/onboarding-modal";
 import { readLeads, upsertLead, removeLead, type StoredLead } from "@/lib/leads-store";
+import { recordSearch } from "@/lib/searches-store";
 
 export const Route = createFileRoute("/_authenticated/find")({
   head: () => ({
