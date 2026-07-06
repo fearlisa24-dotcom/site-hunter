@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthCallbackRouteImport } from './routes/auth.callback'
 import { Route as ApiResearchRouteImport } from './routes/api/research'
 import { Route as ApiAssistantRouteImport } from './routes/api/assistant'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
@@ -36,6 +37,11 @@ const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
 } as any)
 const ApiResearchRoute = ApiResearchRouteImport.update({
   id: '/api/research',
@@ -90,7 +96,7 @@ const ApiPlacesAutocompleteRoute = ApiPlacesAutocompleteRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/find': typeof AuthenticatedFindRoute
   '/outreach': typeof AuthenticatedOutreachRoute
@@ -98,13 +104,14 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/api/research': typeof ApiResearchRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/api/places/autocomplete': typeof ApiPlacesAutocompleteRoute
   '/api/places/photo': typeof ApiPlacesPhotoRoute
   '/api/places/search': typeof ApiPlacesSearchRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/find': typeof AuthenticatedFindRoute
   '/outreach': typeof AuthenticatedOutreachRoute
@@ -112,6 +119,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/api/research': typeof ApiResearchRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/api/places/autocomplete': typeof ApiPlacesAutocompleteRoute
   '/api/places/photo': typeof ApiPlacesPhotoRoute
   '/api/places/search': typeof ApiPlacesSearchRoute
@@ -120,7 +128,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
-  '/auth': typeof AuthRoute
+  '/auth': typeof AuthRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/find': typeof AuthenticatedFindRoute
   '/_authenticated/outreach': typeof AuthenticatedOutreachRoute
@@ -128,6 +136,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/api/assistant': typeof ApiAssistantRoute
   '/api/research': typeof ApiResearchRoute
+  '/auth/callback': typeof AuthCallbackRoute
   '/api/places/autocomplete': typeof ApiPlacesAutocompleteRoute
   '/api/places/photo': typeof ApiPlacesPhotoRoute
   '/api/places/search': typeof ApiPlacesSearchRoute
@@ -144,6 +153,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/api/assistant'
     | '/api/research'
+    | '/auth/callback'
     | '/api/places/autocomplete'
     | '/api/places/photo'
     | '/api/places/search'
@@ -158,6 +168,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/api/assistant'
     | '/api/research'
+    | '/auth/callback'
     | '/api/places/autocomplete'
     | '/api/places/photo'
     | '/api/places/search'
@@ -173,6 +184,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/api/assistant'
     | '/api/research'
+    | '/auth/callback'
     | '/api/places/autocomplete'
     | '/api/places/photo'
     | '/api/places/search'
@@ -181,7 +193,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
-  AuthRoute: typeof AuthRoute
+  AuthRoute: typeof AuthRouteWithChildren
   ApiAssistantRoute: typeof ApiAssistantRoute
   ApiResearchRoute: typeof ApiResearchRoute
   ApiPlacesAutocompleteRoute: typeof ApiPlacesAutocompleteRoute
@@ -211,6 +223,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
     }
     '/api/research': {
       id: '/api/research'
@@ -304,10 +323,20 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface AuthRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
-  AuthRoute: AuthRoute,
+  AuthRoute: AuthRouteWithChildren,
   ApiAssistantRoute: ApiAssistantRoute,
   ApiResearchRoute: ApiResearchRoute,
   ApiPlacesAutocompleteRoute: ApiPlacesAutocompleteRoute,
@@ -317,13 +346,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

@@ -1,6 +1,9 @@
 import { createFileRoute, redirect, Outlet } from "@tanstack/react-router";
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { AppShell } from "@/components/app-shell";
+import { initLeadsStore, clearLeadsStore } from "@/lib/leads-store";
+import { initSearchesStore, clearSearchesStore } from "@/lib/searches-store";
 
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
@@ -11,9 +14,24 @@ export const Route = createFileRoute("/_authenticated")({
     }
     return { user: data.user };
   },
-  component: () => (
+  component: AuthedShell,
+});
+
+function AuthedShell() {
+  const { user } = Route.useRouteContext();
+
+  useEffect(() => {
+    initLeadsStore(user.id);
+    initSearchesStore(user.id);
+    return () => {
+      clearLeadsStore();
+      clearSearchesStore();
+    };
+  }, [user.id]);
+
+  return (
     <AppShell>
       <Outlet />
     </AppShell>
-  ),
-});
+  );
+}

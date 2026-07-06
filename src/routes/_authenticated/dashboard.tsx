@@ -2,9 +2,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
   Bookmark, Sparkles, Search, TrendingUp, Users, MessageCircle,
-  ArrowUpRight, MapPin, Clock,
+  ArrowUpRight, MapPin, Star, Globe, Zap,
 } from "lucide-react";
 import { readLeads, type StoredLead } from "@/lib/leads-store";
+import { readRecentSearches, type RecentSearch } from "@/lib/searches-store";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -18,11 +19,11 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: DashboardOverview,
 });
 
-const RECENT_KEY = "scoutly.recentSearches.v1";
-type RecentSearch = { location: string; industry: string; radius: number; when: string; count: number };
-function readRecent(): RecentSearch[] {
-  if (typeof window === "undefined") return [];
-  try { return JSON.parse(localStorage.getItem(RECENT_KEY) || "[]"); } catch { return []; }
+function greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return "Good morning";
+  if (h < 18) return "Good afternoon";
+  return "Good evening";
 }
 
 function DashboardOverview() {
@@ -33,11 +34,15 @@ function DashboardOverview() {
   useEffect(() => {
     const load = () => {
       setLeads(readLeads());
-      setRecent(readRecent());
+      setRecent(readRecentSearches());
     };
     load();
     window.addEventListener("scoutly:leads-changed", load);
-    return () => window.removeEventListener("scoutly:leads-changed", load);
+    window.addEventListener("scoutly:searches-changed", load);
+    return () => {
+      window.removeEventListener("scoutly:leads-changed", load);
+      window.removeEventListener("scoutly:searches-changed", load);
+    };
   }, []);
 
   const stats = useMemo(() => {
@@ -49,26 +54,80 @@ function DashboardOverview() {
     return { saved: leads.length, researched: scored.length, contacted, avg };
   }, [leads]);
 
-  const firstName = (user?.user_metadata?.full_name ?? user?.email ?? "there").split(" ")[0];
+  const opportunities = useMemo(() => {
+    return [...leads]
+      .filter((l) => typeof l.opportunityScore === "number" && (l.opportunityScore ?? 0) >= 60)
+      .sort((a, b) => (b.opportunityScore ?? 0) - (a.opportunityScore ?? 0))
+      .slice(0, 5);
+  }, [leads]);
+
+  const firstName = (user?.user_metadata?.full_name ?? user?.email ?? "there").split(/[ @]/)[0];
 
   return (
     <div className="mx-auto max-w-[1440px] px-6 py-10 lg:px-10">
-      <div className="mb-10 flex flex-wrap items-end justify-between gap-6">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-soft-blue">Dashboard</p>
-          <h1 className="text-display mt-3 text-4xl lg:text-5xl">
-            Welcome back, {firstName}.
-          </h1>
-          <p className="mt-2 text-[15px] text-muted-foreground">
-            Here's your pipeline. Let's find your next website client.
-          </p>
+      {/* Daily opportunity widget */}
+      <div className="mb-8 overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-navy to-navy/90 text-navy-foreground">
+        <div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-[1.3fr_1fr] lg:p-8">
+          <div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-navy-foreground/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.16em]">
+              <Zap className="h-3 w-3" /> Today's opportunities
+            </div>
+            <h2 className="text-display mt-4 text-3xl leading-tight lg:text-4xl">
+              {greeting()}, {firstName} 👋
+            </h2>
+            <p className="mt-3 max-w-md text-sm leading-relaxed text-navy-foreground/70">
+              {opportunities.length > 0
+                ? `We've highlighted ${opportunities.length} ${opportunities.length === 1 ? "business" : "businesses"} in your saved list that look like strong website opportunities.`
+                : "Once you save and research businesses, your best-fit opportunities will appear here every day."}
+            </p>
+            <div className="mt-6 flex flex-wrap gap-2">
+              <Link
+                to={"/find" as any}
+                className="inline-flex h-10 items-center gap-2 rounded-full bg-navy-foreground px-5 text-xs font-semibold text-navy hover:opacity-90"
+              >
+                <Search className="h-3.5 w-3.5" /> Find new businesses
+              </Link>
+              <Link
+                to={"/saved" as any}
+                className="inline-flex h-10 items-center gap-2 rounded-full border border-navy-foreground/20 px-5 text-xs font-medium text-navy-foreground/90 hover:bg-navy-foreground/10"
+              >
+                Review pipeline <ArrowUpRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {opportunities.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-navy-foreground/20 bg-navy-foreground/5 p-5 text-xs text-navy-foreground/70">
+                Save businesses from Find, then research them to unlock daily opportunity recommendations.
+              </div>
+            ) : (
+              opportunities.map((l) => (
+                <Link
+                  key={l.placeId}
+                  to={"/saved" as any}
+                  className="flex items-center gap-3 rounded-xl border border-navy-foreground/10 bg-navy-foreground/5 p-3 transition hover:bg-navy-foreground/10"
+                >
+                  <div className="grid h-9 w-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-navy-foreground/10">
+                    {l.heroPhoto ? (
+                      <img src={l.heroPhoto} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <MapPin className="h-4 w-4 text-navy-foreground/60" />
+                    )}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-xs font-semibold">{l.name}</div>
+                    <div className="truncate text-[10px] text-navy-foreground/60">
+                      {l.primaryCategory ?? "Business"} · {opportunityReason(l)}
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-navy-foreground px-2 py-0.5 text-[10px] font-bold text-navy">
+                    {l.opportunityScore}
+                  </span>
+                </Link>
+              ))
+            )}
+          </div>
         </div>
-        <Link
-          to="/find"
-          className="inline-flex h-11 items-center gap-2 rounded-full bg-navy px-5 text-sm font-semibold text-navy-foreground hover:opacity-90"
-        >
-          <Sparkles className="h-4 w-4" /> Find opportunities
-        </Link>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -79,18 +138,18 @@ function DashboardOverview() {
       </div>
 
       <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-[1.4fr_1fr]">
-        <Card title="Recent searches" action={<Link to="/find" className="text-xs text-muted-foreground hover:text-foreground">New search →</Link>}>
+        <Card title="Recent searches" action={<Link to={"/find" as any} className="text-xs text-muted-foreground hover:text-foreground">New search →</Link>}>
           {recent.length === 0 ? (
             <EmptyState
               icon={Search}
               title="No searches yet"
               body="Try 'Restaurants in Austin, TX' to see how Scoutly ranks opportunities."
-              cta={<Link to="/find" className="inline-flex h-9 items-center rounded-full bg-navy px-4 text-xs font-medium text-navy-foreground">Start searching</Link>}
+              cta={<Link to={"/find" as any} className="inline-flex h-9 items-center rounded-full bg-navy px-4 text-xs font-medium text-navy-foreground">Start searching</Link>}
             />
           ) : (
             <ul className="divide-y divide-hairline">
               {recent.slice(0, 6).map((r, i) => (
-                <li key={i} className="flex items-center gap-3 py-3">
+                <li key={r.id ?? i} className="flex items-center gap-3 py-3">
                   <span className="grid h-9 w-9 place-items-center rounded-lg bg-surface text-muted-foreground">
                     <MapPin className="h-4 w-4" />
                   </span>
@@ -99,7 +158,7 @@ function DashboardOverview() {
                     <div className="text-xs text-muted-foreground">{r.count} results · {r.radius} mi · {timeAgo(r.when)}</div>
                   </div>
                   <Link
-                    to="/find"
+                    to={"/find" as any}
                     className="text-xs text-muted-foreground hover:text-foreground"
                   >
                     Re-run →
@@ -110,13 +169,13 @@ function DashboardOverview() {
           )}
         </Card>
 
-        <Card title="Top opportunities" action={<Link to="/saved" className="text-xs text-muted-foreground hover:text-foreground">All saved →</Link>}>
+        <Card title="Top opportunities" action={<Link to={"/saved" as any} className="text-xs text-muted-foreground hover:text-foreground">All saved →</Link>}>
           {leads.length === 0 ? (
             <EmptyState
               icon={Bookmark}
               title="Nothing saved yet"
               body="Save businesses from Find to build your shortlist."
-              cta={<Link to="/find" className="inline-flex h-9 items-center rounded-full border border-hairline px-4 text-xs font-medium hover:bg-accent">Find businesses</Link>}
+              cta={<Link to={"/find" as any} className="inline-flex h-9 items-center rounded-full border border-hairline px-4 text-xs font-medium hover:bg-accent">Find businesses</Link>}
             />
           ) : (
             <ul className="space-y-2">
@@ -151,6 +210,14 @@ function DashboardOverview() {
       </div>
     </div>
   );
+}
+
+function opportunityReason(l: StoredLead) {
+  if (l.websiteStatus === "None") return "No website found";
+  if (l.websiteStatus === "Outdated") return "Outdated website";
+  if (l.websiteStatus === "Template") return "Generic template site";
+  if ((l.reviewCount ?? 0) > 100) return "High review count";
+  return "Strong opportunity";
 }
 
 function StatCard({ icon: Icon, label, value, tone }: { icon: any; label: string; value: string | number; tone: string }) {
@@ -202,7 +269,7 @@ function EmptyState({ icon: Icon, title, body, cta }: { icon: any; title: string
 function QuickAction({ to, icon: Icon, title, body }: { to: string; icon: any; title: string; body: string }) {
   return (
     <Link
-      to={to}
+      to={to as any}
       className="group flex items-start gap-3 rounded-2xl border border-hairline bg-card p-5 transition hover:border-foreground/20 hover:shadow-card"
     >
       <span className="grid h-10 w-10 place-items-center rounded-xl bg-accent text-foreground">

@@ -26,7 +26,7 @@ function AuthPage() {
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/app" });
+      if (data.session) navigate({ to: "/dashboard" });
     });
   }, [navigate]);
 
@@ -34,7 +34,7 @@ function AuthPage() {
     setBusy(true);
     setError(null);
     const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/app",
+      redirect_uri: window.location.origin + "/auth/callback",
     });
     if (result.error) {
       setError(result.error.message ?? "Google sign-in failed.");
@@ -42,7 +42,7 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/app" });
+    navigate({ to: "/dashboard" });
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -55,14 +55,14 @@ function AuthPage() {
         const { error } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: window.location.origin + "/app" },
+          options: { emailRedirectTo: window.location.origin + "/auth/callback" },
         });
         if (error) throw error;
         setInfo("Check your inbox to confirm your email.");
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: "/app" });
+        navigate({ to: "/dashboard" });
       }
     } catch (e) {
       setError((e as Error).message);

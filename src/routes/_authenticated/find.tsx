@@ -10,6 +10,7 @@ import {
 import { AIAssistant } from "@/components/ai-assistant";
 import { OnboardingModal } from "@/components/onboarding-modal";
 import { readLeads, upsertLead, removeLead, type StoredLead } from "@/lib/leads-store";
+import { recordSearch } from "@/lib/searches-store";
 
 export const Route = createFileRoute("/_authenticated/find")({
   head: () => ({
@@ -133,10 +134,10 @@ function DashboardPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Search failed");
       setMeta({ formatted: data.location?.formatted ?? location });
-      const initial: EnrichedPlace[] = (data.results ?? []).map((p: Place) => ({ ...p, researching: true }));
+      const initial: EnrichedPlace[] = (data.results ?? []).map((p: Place) => ({ ...p }));
       setResults(initial);
-      // Kick off AI research in parallel (throttled to 4 at a time).
-      runResearchQueue(initial);
+      // Record search in Supabase (fire-and-forget).
+      recordSearch({ location: data.location?.formatted ?? location, industry, radius, count: initial.length });
     } catch (e) {
       setError((e as Error).message);
     } finally {
@@ -144,40 +145,60 @@ function DashboardPage() {
     }
   };
 
-  const runResearchQueue = async (places: EnrichedPlace[]) => {
-    const CONCURRENCY = 4;
-    let cursor = 0;
-    const workers = Array.from({ length: CONCURRENCY }, async () => {
-      while (cursor < places.length) {
-        const i = cursor++;
-        const p = places[i];
-        try {
-          const res = await fetch("/api/research", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name: p.name,
-              address: p.address,
-              website: p.website,
-              phone: p.phone,
-              category: p.primaryCategory,
-              rating: p.rating,
-              reviewCount: p.reviewCount,
-              categories: p.categories,
-            }),
-          });
-          const data = (await res.json()) as Research;
-          setResults((prev) =>
-            prev.map((x) => (x.placeId === p.placeId ? { ...x, research: data, researching: false } : x)),
-          );
-        } catch {
-          setResults((prev) =>
-            prev.map((x) => (x.placeId === p.placeId ? { ...x, researching: false } : x)),
-          );
-        }
+  // Research a single business on-demand (called when the user opens a profile).
+  const researchOne = async (place: EnrichedPlace, force = false) => {
+    if (!force && place.research) return;
+    setResults((prev) => prev.map((x) => (x.placeId === place.placeId ? { ...x, researching: true } : x)));
+    try {
+      const res = await fetch("/api/research", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          placeId: place.placeId,
+          name: place.name,
+          address: place.address,
+          website: place.website,
+          phone: place.phone,
+          category: place.primaryCategory,
+          rating: place.rating,
+          reviewCount: place.reviewCount,
+          categories: place.categories,
+          refresh: force,
+        }),
+      });
+      const data = (await res.json()) as Research;
+      setResults((prev) =>
+        prev.map((x) => (x.placeId === place.placeId ? { ...x, research: data, researching: false } : x)),
+      );
+      setSelected((cur) => (cur && cur.placeId === place.placeId ? { ...cur, research: data, researching: false } : cur));
+      // If it's already saved, keep the stored copy in sync with the fresh report.
+      if (saved.has(place.placeId)) {
+        upsertLead({
+          placeId: place.placeId,
+          name: place.name,
+          address: place.address,
+          primaryCategory: place.primaryCategory,
+          rating: place.rating,
+          reviewCount: place.reviewCount,
+          website: place.website,
+          phone: place.phone,
+          heroPhoto: place.heroPhoto,
+          opportunityScore: data.opportunityScore,
+          websiteStatus: data.websiteStatus,
+          savedAt: new Date().toISOString(),
+          status: "new",
+        });
       }
-    });
-    await Promise.all(workers);
+    } catch {
+      setResults((prev) =>
+        prev.map((x) => (x.placeId === place.placeId ? { ...x, researching: false } : x)),
+      );
+    }
+  };
+
+  const openProfile = (p: EnrichedPlace) => {
+    setSelected(p);
+    if (!p.research && !p.researching) researchOne(p);
   };
 
   // Auto-run first search on mount so the app doesn't feel empty.
@@ -235,7 +256,7 @@ function DashboardPage() {
               p={p}
               saved={saved.has(p.placeId)}
               onSave={() => toggleSave(p)}
-              onResearch={() => setSelected(p)}
+              onResearch={() => openProfile(p)}
               onImage={() => p.photos.length > 0 && setGallery({ photos: p.photos, index: 0, name: p.name })}
             />
           ))}
