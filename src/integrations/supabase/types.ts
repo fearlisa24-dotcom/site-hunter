@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      ai_research_cache: {
+        Row: {
+          business_name: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          model: string | null
+          place_id: string
+          report: Json
+          updated_at: string
+        }
+        Insert: {
+          business_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          model?: string | null
+          place_id: string
+          report: Json
+          updated_at?: string
+        }
+        Update: {
+          business_name?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          model?: string | null
+          place_id?: string
+          report?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       outreach: {
         Row: {
           body: string
