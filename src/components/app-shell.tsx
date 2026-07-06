@@ -8,12 +8,12 @@ import { useAuth } from "@/hooks/use-auth";
 import { readLeads } from "@/lib/leads-store";
 
 const NAV = [
-  { to: "/app", label: "Dashboard", icon: LayoutDashboard, exact: true },
-  { to: "/app/find", label: "Find Businesses", icon: Search },
-  { to: "/app/saved", label: "Saved Leads", icon: Bookmark },
-  { to: "/app/outreach", label: "Outreach", icon: MessageCircle },
-  { to: "/app/settings", label: "Settings", icon: Settings },
-];
+  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
+  { to: "/find", label: "Find Businesses", icon: Search },
+  { to: "/saved", label: "Saved Leads", icon: Bookmark },
+  { to: "/outreach", label: "Outreach", icon: MessageCircle },
+  { to: "/settings", label: "Settings", icon: Settings },
+] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, signOut } = useAuth();
@@ -43,7 +43,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="grid min-h-screen grid-cols-[240px_1fr] bg-background">
       <aside className="sticky top-0 flex h-screen flex-col border-r border-hairline bg-sidebar px-4 py-5">
-        <Link to="/app" className="flex items-center gap-2 px-2 pb-8">
+        <Link to="/dashboard" className="flex items-center gap-2 px-2 pb-8">
           <span className="grid h-8 w-8 place-items-center rounded-xl bg-navy text-navy-foreground">
             <Compass className="h-4 w-4" />
           </span>
@@ -64,7 +64,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               >
                 <i.icon className="h-4 w-4" />
                 <span className="flex-1">{i.label}</span>
-                {i.to === "/app/saved" && savedCount > 0 && (
+                {i.to === "/saved" && savedCount > 0 && (
                   <span className="rounded-full bg-navy px-2 py-0.5 text-[10px] font-semibold text-navy-foreground">
                     {savedCount}
                   </span>
@@ -122,7 +122,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                         <div className="text-[10px] text-muted-foreground">Signed in</div>
                       </div>
                       <Link
-                        to="/app/settings"
+                        to="/settings"
                         onClick={() => setMenuOpen(false)}
                         className="flex items-center gap-2 px-3 py-2 text-xs hover:bg-accent"
                       >
