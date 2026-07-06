@@ -59,6 +59,22 @@ export const Route = createFileRoute("/api/research")({
       POST: async ({ request }) => {
         try {
           const b = (await request.json()) as ResearchInput;
+          const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+          // Try cache first (unless refresh requested).
+          if (b.placeId && !b.refresh) {
+            const { data: cached } = await supabaseAdmin
+              .from("ai_research_cache")
+              .select("report,updated_at")
+              .eq("place_id", b.placeId)
+              .maybeSingle();
+            if (cached?.report) {
+              const age = Date.now() - new Date(cached.updated_at as string).getTime();
+              const fresh = age < CACHE_TTL_DAYS * 24 * 3600 * 1000;
+              if (fresh) return Response.json({ ...(cached.report as any), _cached: true });
+            }
+          }
+
           const sys = `You are Scoutly's AI research analyst. You help freelance web designers evaluate small businesses as potential website clients. Return STRICT JSON matching the schema. Be realistic, specific, and useful.`;
           const user = `Business to analyze:
 Name: ${b.name}
@@ -103,6 +119,21 @@ Return ONLY JSON with this exact shape (no commentary):
           if (b.website && !out.socials?.website) {
             out.socials = { ...out.socials, website: b.website };
           }
+
+          // Persist to shared cache (fire-and-forget).
+          if (b.placeId) {
+            try {
+              await supabaseAdmin
+                .from("ai_research_cache")
+                .upsert(
+                  { place_id: b.placeId, business_name: b.name, report: out as any, model: "lovable-ai" },
+                  { onConflict: "place_id" },
+                );
+            } catch (cacheErr) {
+              console.warn("[research] cache write failed", cacheErr);
+            }
+          }
+
           return Response.json(out);
         } catch (e) {
           return Response.json({ error: (e as Error).message }, { status: 500 });
