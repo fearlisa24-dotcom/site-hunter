@@ -7,13 +7,14 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { readLeads } from "@/lib/leads-store";
 
-const NAV = [
+type NavItem = { to: string; label: string; icon: any; exact?: boolean };
+const NAV: NavItem[] = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, exact: true },
   { to: "/find", label: "Find Businesses", icon: Search },
   { to: "/saved", label: "Saved Leads", icon: Bookmark },
   { to: "/outreach", label: "Outreach", icon: MessageCircle },
   { to: "/settings", label: "Settings", icon: Settings },
-] as const;
+];
 
 export function AppShell({ children }: { children: ReactNode }) {
   const { user, signOut } = useAuth();
