@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { chatJSON } from "@/lib/ai.server";
 
 type ResearchInput = {
+  placeId?: string;
   name: string;
   address?: string;
   website?: string | null;
@@ -10,7 +11,10 @@ type ResearchInput = {
   rating?: number | null;
   reviewCount?: number | null;
   categories?: string[];
+  refresh?: boolean;
 };
+
+const CACHE_TTL_DAYS = 30;
 
 type ResearchResult = {
   opportunityScore: number;
